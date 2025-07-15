@@ -1,5 +1,3 @@
-# Force correct Python version
-python_version == 3.10.13
 fastapi==0.104.1
 uvicorn==0.24.0
 google-generativeai==0.3.2
