@@ -1,10 +1,13 @@
 import axios from 'axios'
 
 const api = axios.create({
-    baseURL: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-        ? 'http://127.0.0.1:8102/'
-        : '/api/'
+  baseURL: process.env.REACT_APP_API_URL || "https://my-react-app-weo4.onrender.com"
 });
 
-// Use it right away or export it
+// Remove ANY localhost overrides for production
+console.log('API baseURL:', api.defaults.baseURL);
+console.log('Current hostname:', window.location.hostname);
+console.log('Environment:', process.env.NODE_ENV);
+console.log('REACT_APP_API_URL:', process.env.REACT_APP_API_URL);
+
 export default api;
