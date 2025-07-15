@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import api from './Bk/api';
+import api from './api.js';
 
 const DrivingLicenseExtractor = () => {
   const [selectedFile, setSelectedFile] = useState(null);
