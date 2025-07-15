@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DL Info Extractor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .upload-section {
+            background: white;
+            border-radius: 8px;
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .upload-area {
+            border: 2px dashed #d1d5db;
+            border-radius: 8px;
+            padding: 60px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+
+        .upload-area:hover {
+            border-color: #3b82f6;
+        }
+
+        .upload-area.dragover {
+            border-color: #3b82f6;
+            background: #eff6ff;
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .upload-text {
+            font-size: 18px;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+
+        .upload-subtext {
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 20px;
+        }
+
+        .browse-link {
+            color: #3b82f6;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .license-preview {
+            max-width: 300px;
+            max-height: 200px;
+            border-radius: 8px;
+            margin: 20px auto;
+            display: block;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .submit-btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            display: block;
+            margin: 20px auto 0;
+            min-width: 200px;
+        }
+
+        .submit-btn:hover:not(:disabled) {
+            background: #2563eb;
+        }
+
+        .submit-btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .results-section {
+            background: white;
+            border-radius: 8px;
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .results-title {
+            font-size: 24px;
+            color: #1f2937;
+            margin-bottom: 30px;
+            text-align: left;
+        }
+
+        .details-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .details-table tr {
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .details-table td {
+            padding: 12px 0;
+            vertical-align: top;
+        }
+
+        .detail-label {
+            font-weight: 500;
+            color: #374151;
+            width: 200px;
+        }
+
+        .detail-value {
+            color: #1f2937;
+        }
+
+        .uploaded-documents {
+            background: white;
+            border-radius: 8px;
+            padding: 40px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .documents-title {
+            font-size: 24px;
+            color: #1f2937;
+            margin-bottom: 30px;
+        }
+
+        .documents-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .document-item {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .document-preview {
+            width: 100%;
+            max-width: 200px;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 6px;
+            margin-bottom: 12px;
+        }
+
+        .document-id {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            display: none;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .loading-spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid #f3f4f6;
+            border-top: 3px solid #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            background: #fef2f2;
+            color: #dc2626;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 16px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .success-message {
+            background: #f0fdf4;
+            color: #16a34a;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 16px;
+            display: none;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .upload-section, .results-section, .uploaded-documents {
+                padding: 20px;
+            }
+            
+            .documents-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Upload Section -->
+        <div class="upload-section">
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-icon">📤</div>
+                <div class="upload-text">Upload image of driving license</div>
+                <div class="upload-subtext">or <a href="#" class="browse-link" onclick="document.getElementById('fileInput').click(); return false;">browse</a></div>
+                <input type="file" id="fileInput" class="file-input" accept="image/*">
+            </div>
+
+            <div id="previewContainer" style="display: none;">
+                <img id="licensePreview" class="license-preview" alt="License preview">
+            </div>
+
+            <button class="submit-btn" id="submitBtn" disabled>Submit</button>
+
+            <div class="loading" id="loadingDiv">
+                <div class="loading-spinner"></div>
+                <p>Processing your driving license...</p>
+            </div>
+
+            <div class="error-message" id="errorMessage"></div>
+            <div class="success-message" id="successMessage"></div>
+        </div>
+
+        <!-- Results Section -->
+        <div class="results-section">
+            <h2 class="results-title">Driving License Details</h2>
+            <table class="details-table">
+                <tr>
+                    <td class="detail-label">License Number</td>
+                    <td class="detail-value" id="licenseNumber">-</td>
+                </tr>
+                <tr>
+                    <td class="detail-label">Name</td>
+                    <td class="detail-value" id="holderName">-</td>
+                </tr>
+                <tr>
+                    <td class="detail-label">Date of Birth</td>
+                    <td class="detail-value" id="dateOfBirth">-</td>
+                </tr>
+                <tr>
+                    <td class="detail-label">Address</td>
+                    <td class="detail-value" id="address">-</td>
+                </tr>
+                <tr>
+                    <td class="detail-label">Issue Date</td>
+                    <td class="detail-value" id="issueDate">-</td>
+                </tr>
+                <tr>
+                    <td class="detail-label">Expiration Date</td>
+                    <td class="detail-value" id="expirationDate">-</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Uploaded Documents Section -->
+        <div class="uploaded-documents">
+            <h2 class="documents-title">Uploaded Documents</h2>
+            <div class="documents-grid" id="documentsGrid">
+                <!-- Documents will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.0/axios.min.js"></script>
+    <script>
+        class DrivingLicenseExtractor {
+            constructor() {
+                this.selectedFile = null;
+                this.uploadedDocuments = [];
+                this.api = axios.create({
+                    baseURL: "http://127.0.0.1:8102"
+                });
+                this.initializeElements();
+                this.bindEvents();
+            }
+
+            initializeElements() {
+                this.uploadArea = document.getElementById('uploadArea');
+                this.fileInput = document.getElementById('fileInput');
+                this.licensePreview = document.getElementById('licensePreview');
+                this.previewContainer = document.getElementById('previewContainer');
+                this.submitBtn = document.getElementById('submitBtn');
+                this.loadingDiv = document.getElementById('loadingDiv');
+                this.errorMessage = document.getElementById('errorMessage');
+                this.successMessage = document.getElementById('successMessage');
+                this.documentsGrid = document.getElementById('documentsGrid');
+                
+                // Detail elements
+                this.licenseNumber = document.getElementById('licenseNumber');
+                this.holderName = document.getElementById('holderName');
+                this.dateOfBirth = document.getElementById('dateOfBirth');
+                this.address = document.getElementById('address');
+                this.issueDate = document.getElementById('issueDate');
+                this.expirationDate = document.getElementById('expirationDate');
+            }
+
+            bindEvents() {
+                this.uploadArea.addEventListener('click', () => this.fileInput.click());
+                this.fileInput.addEventListener('change', (e) => this.handleFileSelect(e));
+                this.uploadArea.addEventListener('dragover', (e) => this.handleDragOver(e));
+                this.uploadArea.addEventListener('dragleave', (e) => this.handleDragLeave(e));
+                this.uploadArea.addEventListener('drop', (e) => this.handleDrop(e));
+                this.submitBtn.addEventListener('click', () => this.handleSubmit());
+            }
+
+            handleFileSelect(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    this.handleFile(file);
+                }
+            }
+
+            handleFile(file) {
+                if (!file.type.startsWith('image/')) {
+                    this.showError('Please select a valid image file.');
+                    return;
+                }
+
+                this.selectedFile = file;
+                this.hideMessages();
+                this.submitBtn.disabled = false;
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    this.licensePreview.src = e.target.result;
+                    this.previewContainer.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+
+            handleDragOver(e) {
+                e.preventDefault();
+                this.uploadArea.classList.add('dragover');
+            }
+
+            handleDragLeave(e) {
+                e.preventDefault();
+                this.uploadArea.classList.remove('dragover');
+            }
+
+            handleDrop(e) {
+                e.preventDefault();
+                this.uploadArea.classList.remove('dragover');
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    this.handleFile(files[0]);
+                }
+            }
+
+            async fileToBase64(file) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.readAsDataURL(file);
+                    reader.onload = () => {
+                        const base64String = reader.result.split(',')[1];
+                        resolve(base64String);
+                    };
+                    reader.onerror = error => reject(error);
+                });
+            }
+
+            async handleSubmit() {
+                if (!this.selectedFile) {
+                    this.showError('Please select an image file first.');
+                    return;
+                }
+
+                this.setLoading(true);
+                this.hideMessages();
+
+                try {
+                    const base64Data = await this.fileToBase64(this.selectedFile);
+                    
+                    const response = await this.api.post('/extract-license', {
+                        image_data: base64Data,
+                        mime_type: this.selectedFile.type
+                    });
+                    
+                    if (response.data.success) {
+                        this.updateResults(response.data.data);
+                        this.addToUploadedDocuments(this.selectedFile, response.data.data);
+                        this.showSuccess('License information extracted successfully!');
+                        this.resetUpload();
+                    } else {
+                        this.showError(response.data.error || 'Failed to extract information.');
+                    }
+                    
+                } catch (error) {
+                    console.error('API Error:', error);
+                    
+                    if (error.response) {
+                        const errorMsg = error.response.data?.error || 
+                                       error.response.data?.detail || 
+                                       `Server error: ${error.response.status}`;
+                        this.showError(errorMsg);
+                    } else if (error.request) {
+                        this.showError('Network error: Could not connect to server.');
+                    } else {
+                        this.showError('An unexpected error occurred: ' + error.message);
+                    }
+                } finally {
+                    this.setLoading(false);
+                }
+            }
+
+            setLoading(loading) {
+                if (loading) {
+                    this.loadingDiv.classList.add('show');
+                    this.submitBtn.disabled = true;
+                } else {
+                    this.loadingDiv.classList.remove('show');
+                    this.submitBtn.disabled = !this.selectedFile;
+                }
+            }
+
+            showError(message) {
+                this.errorMessage.textContent = message;
+                this.errorMessage.classList.add('show');
+                this.successMessage.classList.remove('show');
+            }
+
+            showSuccess(message) {
+                this.successMessage.textContent = message;
+                this.successMessage.classList.add('show');
+                this.errorMessage.classList.remove('show');
+            }
+
+            hideMessages() {
+                this.errorMessage.classList.remove('show');
+                this.successMessage.classList.remove('show');
+            }
+
+            updateResults(data) {
+                const dl = data.drivingLicense || {};
+                const name = dl.name || {};
+                const address = dl.address || {};
+                
+                this.licenseNumber.textContent = dl.dlNumber || '-';
+                this.holderName.textContent = `${name.firstName || ''} ${name.middleName || ''} ${name.lastName || ''}`.trim() || '-';
+                this.dateOfBirth.textContent = dl.dateOfBirth || '-';
+                this.address.textContent = `${address.street || ''} ${address.city || ''} ${address.state || ''} ${address.zipCode || ''}`.trim() || '-';
+                this.issueDate.textContent = dl.issueDate || '-';
+                this.expirationDate.textContent = dl.expiryDate || '-';
+            }
+
+            addToUploadedDocuments(file, data) {
+                const dl = data.drivingLicense || {};
+                const documentId = dl.dlNumber || `DOC${Date.now()}`;
+                
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const document = {
+                        id: documentId,
+                        image: e.target.result,
+                        filename: file.name,
+                        timestamp: new Date()
+                    };
+                    
+                    this.uploadedDocuments.push(document);
+                    this.renderUploadedDocuments();
+                };
+                reader.readAsDataURL(file);
+            }
+
+            renderUploadedDocuments() {
+                this.documentsGrid.innerHTML = '';
+                
+                this.uploadedDocuments.forEach(doc => {
+                    const docElement = document.createElement('div');
+                    docElement.className = 'document-item';
+                    docElement.innerHTML = `
+                        <img src="${doc.image}" alt="License" class="document-preview">
+                        <div class="document-id">${doc.id}</div>
+                    `;
+                    this.documentsGrid.appendChild(docElement);
+                });
+            }
+
+            resetUpload() {
+                this.selectedFile = null;
+                this.fileInput.value = '';
+                this.previewContainer.style.display = 'none';
+                this.submitBtn.disabled = true;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            new DrivingLicenseExtractor();
+        });
+    </script>
+</body>
+</html>

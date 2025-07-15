@@ -1,0 +1,14 @@
+{
+  "version": 2,
+  "functions": {
+    "api/backk.py": {
+      "runtime": "python3.9"
+    }
+  },
+   "builds": [
+    {
+      "src": "backk.py",
+      "use": "@vercel/python"
+    }
+  ]
+}
