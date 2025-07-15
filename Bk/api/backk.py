@@ -18,9 +18,10 @@ app = FastAPI()
 # Configure Gemini API
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
+# Your existing model classes remain the same...
 class ImageData(BaseModel):
-    image_data: str  # Base64 encoded image
-    mime_type: str   # Image MIME type (e.g., 'image/jpeg', 'image/png')
+    image_data: str
+    mime_type: str
 
 class Name(BaseModel):
     firstName: Optional[str] = None
@@ -58,29 +59,23 @@ class APIResponse(BaseModel):
     data: Optional[ExtractedData] = None
     error: Optional[str] = None
 
-# CORS configuration
+# FIXED CORS configuration
 origins = [
-    "https://my-react-app-nine-self.vercel.app/"
+    "https://my-react-app-nine-self.vercel.app",  # Fixed: removed trailing slash
+    "https://licenseee-lovat.vercel.app",  # Fixed: removed trailing slash
+    "http://localhost:3000",
+    "http://localhost:3001",
     "http://localhost:5500",
     "http://127.0.0.1:5500",
-    "http://localhost:3000",
-    "http://127.0.0.1:8102/",
-    "http://localhost:3001",
     "http://localhost:8080",
-    "http://192.168.29.210:5175/",
     "http://127.0.0.1:8080",
-     # Add this line (if using port 8080)
-    "https://licenseee-lovat.vercel.app/",
-    "file://",
-    "*"
 ]
-
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins for now
+    allow_origins=origins,  # Use the specific origins list
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
 
