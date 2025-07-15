@@ -60,6 +60,7 @@ class APIResponse(BaseModel):
 
 # CORS configuration
 origins = [
+    "https://my-react-app-nine-self.vercel.app/"
     "http://localhost:5500",
     "http://127.0.0.1:5500",
     "http://localhost:3000",
@@ -77,7 +78,7 @@ origins = [
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],  # Allow all origins for now
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
