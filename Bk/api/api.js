@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 const api = axios.create({
-  baseURL: "https://my-react-app-weo4.onrender.com"
+  baseURL: process.env.REACT_APP_API_URL || "https://my-react-app-weo4.onrender.com"
 });
 
 // Remove ANY localhost overrides for production
