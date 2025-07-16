@@ -1,13 +1,12 @@
-import axios from 'axios'
+import axios from 'axios';
 
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || "https://my-react-app-weo4.onrender.com"
+  baseURL: import.meta.env.VITE_API_URL || "https://my-react-app-weo4.onrender.com"
 });
 
-// Remove ANY localhost overrides for production
+// Debug logs for Vite
 console.log('API baseURL:', api.defaults.baseURL);
-console.log('Current hostname:', window.location.hostname);
-console.log('Environment:', process.env.NODE_ENV);
-console.log('REACT_APP_API_URL:', process.env.REACT_APP_API_URL);
+console.log('VITE_API_URL:', import.meta.env.VITE_API_URL);
+console.log('Environment:', import.meta.env.MODE);
 
 export default api;
