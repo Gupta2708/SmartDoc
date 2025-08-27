@@ -12,11 +12,8 @@ from dotenv import load_dotenv
 
 # Load environment variables
 load_dotenv()
-print("GEMINI_API_KEY:", os.getenv("GEMINI_API_KEY"))
-app = FastAPI()
-
-# Configure Gemini API
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+api_key = os.getenv("GEMINI_API_KEY")
+genai.configure(api_key=api_key)
 
 # Your existing model classes remain the same...
 class ImageData(BaseModel):
