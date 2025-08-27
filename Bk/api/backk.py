@@ -15,6 +15,8 @@ load_dotenv()
 api_key = os.getenv("GEMINI_API_KEY")
 genai.configure(api_key=api_key)
 
+app = FastAPI()
+
 # Your existing model classes remain the same...
 class ImageData(BaseModel):
     image_data: str
