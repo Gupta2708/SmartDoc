@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle, XCircle, HelpCircle, Pencil, Save, X, Download, Clipboard, FileText, FileJson, FileSpreadsheet, FilePdf } from 'lucide-react';
+import { CheckCircle, XCircle, HelpCircle, Pencil, Save, X, Download, Clipboard, FileText, FileJson, FileSpreadsheet, FileDown } from 'lucide-react';
 
 const SECTION_CONFIG = {
   driving_license: [
@@ -309,7 +309,7 @@ const ResultsSection = ({ extractedData, goBack }) => {
           <button onClick={handleCopyJson} className="flex items-center gap-1 px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded hover:bg-blue-200"><Clipboard size={16}/>Copy JSON</button>
           <button onClick={handleExportJson} className="flex items-center gap-1 px-3 py-1 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 rounded hover:bg-green-200"><FileJson size={16}/>Export JSON</button>
           <button onClick={handleExportCsv} className="flex items-center gap-1 px-3 py-1 bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 rounded hover:bg-yellow-200"><FileSpreadsheet size={16}/>Export CSV</button>
-          <button onClick={handleExportPdf} className="flex items-center gap-1 px-3 py-1 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 rounded hover:bg-red-200"><FilePdf size={16}/>Export PDF</button>
+          <button onClick={handleExportPdf} className="flex items-center gap-1 px-3 py-1 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 rounded hover:bg-red-200"><FileDown size={16}/>Export PDF</button>
         </div>
         <pre className="bg-gray-100 dark:bg-gray-900 rounded p-4 text-xs overflow-x-auto max-h-64 border border-gray-200 dark:border-gray-700">
           {getLiveJson()}
