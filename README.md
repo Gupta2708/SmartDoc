@@ -1,54 +1,67 @@
-# DL Info Extractor
+# SmartDoc Extractor
 
-A modern web application to extract all visible information from a driving license image using Google Gemini AI.
-
----
-
-## Features
-- Upload your driving license image (drag & drop or file picker)
-- Extracts all visible details (name, address, DL number, etc.) using Gemini Vision API
-- Fast, responsive React frontend (Vite)
-- Python FastAPI backend with secure CORS
-- Clean, user-friendly UI
+An AI-powered document parser built with Google Gemini AI + React + FastAPI, designed to extract and validate key information from Driving Licenses, Aadhaar Cards, and PAN Cards. The system combines LLM intelligence with regex-based validation for high accuracy and provides structured exports (JSON, CSV, PDF) for downstream use cases such as KYC, fintech onboarding, and digital identity verification.
 
 ---
 
-## Demo
-- **Frontend:** [Netlify/Vercel deployment link here]
-- **Backend:** [Vercel/Render deployment link here]
+## Features  
+- 📄 **Multi-Document Support** – Extract details from Driving Licenses, Aadhaar Cards, and more.  
+- 🤖 **AI-Powered Extraction** – Uses **Gemini AI** for accurate and fast data parsing.  
+- 🎨 **Modern UI/UX** – Developed using **React + TailwindCSS** for a responsive and clean design.  
+- 📂 **Export Options** – Save extracted results as **PDF, JSON, CSV, or TXT**.  
+- 🔍 **Copy to Clipboard** – Quickly copy extracted details for further use.  
+- ⚡ **Fast & Lightweight** – Built with **Vite** for optimized performance.  
+- 🌙 **Dark Mode Support** – Switch between light and dark themes.
 
 ---
 
-## Tech Stack
-- **Frontend:** React, Vite, Axios
-- **Backend:** FastAPI, Google Generative AI (Gemini), python-dotenv
-- **Deployment:** Vercel (backend), Netlify/Vercel (frontend)
+## 🛠️ Tech Stack  
+- **Frontend**: React + Vite + 
+- **Backend**: FastAPI, python-dotenv  
+- **API**: Google Generative AI (Gemini)
+- **Icons & UI**: Lucide React 
 
 ---
 
 ## Folder Structure
 ```
 my-react-app/
-├── src/                  # React frontend
-│   ├── App.jsx           # Main app layout
-│   ├── api.js            # Axios API client
-│   ├── DrivingLicenseExtractor.jsx
-│   ├── ResultsSection.jsx
-│   ├── UploadArea.jsx
-│   ├── InfoCard.jsx
-│   ├── ErrorAlert.jsx
-│   └── LoadingSpinner.jsx
-├── Bk/api/               # Python FastAPI backend
-│   ├── backk.py          # Main FastAPI app
-│   ├── license.py        # Alternative HTTP handler (for Vercel)
-│   ├── requirements.txt  # Python dependencies
-│   ├── runtime.txt       # Python version
-│   └── .env              # (Not committed) Gemini API key
-├── .gitignore
+├── README.md
+├── eslint.config.js
+├── index.html                # Entry HTML (Vite)
+├── netlify.toml              # Netlify config for frontend
 ├── package.json
 ├── vite.config.js
-└── README.md
+│
+├── Bk/                       # Backend folder
+│   ├── requirements.txt      # Python dependencies
+│   ├── runtime.txt           # Python version for deploy
+│   ├── vercel.json           # Vercel config
+│   └── api/
+│       └── backk.py          # FastAPI app
+│
+└── src/                      # React frontend
+    ├── api.js                # Axios API client
+    ├── App.jsx               # Main app layout
+    ├── App.css
+    ├── index.jsx             # React entry
+    ├── index.css
+    ├── DrivingLicenseExtractor.jsx
+    ├── ResultsSection.jsx    # Shows extracted results + export buttons
+    ├── UploadArea.jsx        # Drag-and-drop upload UI
+    ├── InfoCard.jsx          # Card for extracted fields
+    ├── ErrorAlert.jsx
+    └── LoadingSpinner.jsx
+
 ```
+---
+
+## 📑 Usage
+
+- Upload a document (Driving License, Aadhaar, etc.).
+- Gemini AI extracts structured details automatically.
+- Review results in a clean UI with copy & edit options.
+- Export data in PDF, JSON, CSV, or TXT format.
 
 ---
 
@@ -116,13 +129,6 @@ await api.post('/extract-license', {
 - **Frontend:** Deploy `my-react-app` to Netlify or Vercel. Set `VITE_API_URL` in environment variables to your backend URL.
 - **Backend:** Deploy `Bk/api/backk.py` to Vercel/Render. Set `GEMINI_API_KEY` in environment variables.
 - See `vercel.json` for Vercel config.
-
----
-
-## Security Best Practices
-- **Never commit `.env` files or API keys.**
-- `.env` and `*.env` are in `.gitignore`.
-- If you accidentally commit a secret, revoke it immediately and follow [removal instructions](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/removing-sensitive-data-from-a-repository).
 
 ---
 
