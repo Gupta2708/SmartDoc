@@ -22,6 +22,7 @@ const DrivingLicenseExtractor = ({ cardType }) => {
   const [showResults, setShowResults] = useState(false);
   const [isDragActive, setIsDragActive] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
+  const [validation, setValidation] = useState(null);
 
   const handleFileSelect = (event) => {
     const file = event.target.files[0];
@@ -95,6 +96,7 @@ const DrivingLicenseExtractor = ({ cardType }) => {
       });
       if (response.data.success) {
         setExtractedData(response.data.data);
+        setValidation(response.data.validation);
         setShowResults(true);
         setCurrentStep(3); // Move to Export step (results ready)
       } else {
@@ -151,7 +153,7 @@ const DrivingLicenseExtractor = ({ cardType }) => {
     return (
       <div className="main-card bg-white dark:bg-gray-900 rounded-xl shadow-lg p-8 max-w-2xl mx-auto">
         <Stepper />
-        <ResultsSection extractedData={extractedData} goBack={goBack} />
+        <ResultsSection extractedData={extractedData} validation={validation} goBack={goBack} />
       </div>
     );
   }

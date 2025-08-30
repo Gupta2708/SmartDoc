@@ -100,19 +100,23 @@ function setField(obj, path, value) {
   }
 }
 
-const ResultsSection = ({ extractedData, goBack }) => {
+const ResultsSection = ({ extractedData, validation, goBack }) => {
   // Determine card type and data
   let cardType = null;
   let cardData = null;
+  let validationData = null;
   if (extractedData?.drivingLicense) {
     cardType = 'driving_license';
     cardData = extractedData.drivingLicense;
+    validationData = validation?.drivingLicense;
   } else if (extractedData?.panCard) {
     cardType = 'pan_card';
     cardData = extractedData.panCard;
+    validationData = validation?.panCard;
   } else if (extractedData?.aadhaarCard) {
     cardType = 'aadhaar_card';
     cardData = extractedData.aadhaarCard;
+    validationData = validation?.aadhaarCard;
   }
   const [openSections, setOpenSections] = useState([0]);
   const [editField, setEditField] = useState(null);
@@ -120,11 +124,10 @@ const ResultsSection = ({ extractedData, goBack }) => {
   if (!cardType || !cardData) return null;
 
   // Helper for validation icon
-  function ValidationIcon({ valid, value, regex }) {
-    if (valid === true) return <CheckCircle className="text-green-500 inline w-5 h-5" title="Valid" />;
-    if (valid === false) return <XCircle className="text-red-500 inline w-5 h-5" title={regex ? `Format: ${regex}` : 'Invalid'} />;
-    if (value == null || value === '') return <HelpCircle className="text-gray-400 inline w-5 h-5" title="Missing" />;
-    return <HelpCircle className="text-gray-400 inline w-5 h-5" title="Unknown" />;
+  function ValidationIcon({ valid }) {
+    if (valid === true) return <span title="Valid" style={{color: 'green', fontWeight: 'bold', fontSize: '1.2em'}}>✔</span>;
+    if (valid === false) return <span title="Invalid" style={{color: 'red', fontWeight: 'bold', fontSize: '1.2em'}}>✖</span>;
+    return <span title="Unknown" style={{color: '#bbb', fontWeight: 'bold', fontSize: '1.2em'}}>?</span>;
   }
 
   // Collapsible section
@@ -152,18 +155,15 @@ const ResultsSection = ({ extractedData, goBack }) => {
             >
               {section.fields.map(field => {
                 // Support nested fields
-                let fieldObj = localData;
-                let valid = null;
                 let value = null;
+                let valid = null;
                 if (field.key.includes('.')) {
                   const [parent, child] = field.key.split('.');
-                  if (fieldObj[parent]) {
-                    value = fieldObj[parent][child]?.value ?? fieldObj[parent][child];
-                    valid = fieldObj[parent][child]?.valid;
-                  }
+                  value = cardData[parent]?.[child] ?? '';
+                  valid = validationData?.[parent]?.[child]?.valid;
                 } else {
-                  value = fieldObj[field.key]?.value ?? fieldObj[field.key];
-                  valid = fieldObj[field.key]?.valid;
+                  value = cardData[field.key] ?? '';
+                  valid = validationData?.[field.key]?.valid;
                 }
                 // Array fields (restrictions, endorsements)
                 if (Array.isArray(value)) value = value.join(', ');
@@ -216,7 +216,7 @@ const ResultsSection = ({ extractedData, goBack }) => {
                       )}
                     </span>
                     <span className="ml-2 flex items-center gap-2">
-                      <ValidationIcon valid={valid} value={value} regex={field.regex} />
+                      <ValidationIcon valid={valid} />
                       {isEditing ? (
                         <button className="ml-1 text-green-600" onClick={() => setEditField(null)} title="Save"><Save size={18} /></button>
                       ) : (
