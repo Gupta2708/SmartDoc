@@ -94,6 +94,7 @@ class ExtractedData(BaseModel):
 class APIResponse(BaseModel):
     success: bool
     data: Optional[ExtractedData] = None
+    validation: Optional[dict] = None  # New field for validation results
     error: Optional[str] = None
 
 # FIXED CORS configuration
@@ -401,10 +402,20 @@ async def extract_info(image_data: ImageData):
             image_data.mime_type,
             image_data.card_type
         )
-        validated_info = validate_card_fields(image_data.card_type, extracted_info)
+        # Build ExtractedData for the main data field
+        data_obj = ExtractedData()
+        if image_data.card_type == CardType.driving_license:
+            data_obj.drivingLicense = DrivingLicense(**extracted_info.get("drivingLicense", {}))
+        elif image_data.card_type == CardType.pan_card:
+            data_obj.panCard = PanCard(**extracted_info.get("panCard", {}))
+        elif image_data.card_type == CardType.aadhaar_card:
+            data_obj.aadhaarCard = AadhaarCard(**extracted_info.get("aadhaarCard", {}))
+        # Validation results (regex etc.)
+        validation_results = validate_card_fields(image_data.card_type, extracted_info)
         return APIResponse(
             success=True,
-            data=validated_info
+            data=data_obj,
+            validation=validation_results
         )
     except HTTPException:
         raise
