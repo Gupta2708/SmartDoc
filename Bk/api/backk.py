@@ -215,6 +215,31 @@ def get_gemini_prompt(card_type: CardType) -> str:
     else:
         raise ValueError("Invalid card type")
 
+def coerce_types(data):
+    dl = data.get("drivingLicense", {})
+    # String fields
+    for field in [
+        "state", "dlNumber", "issueDate", "expiryDate", "sex", "height", "weight", "dateOfBirth", "hairColor", "eyeColor", "dd"
+    ]:
+        if field in dl and dl[field] is not None and not isinstance(dl[field], str):
+            dl[field] = str(dl[field])
+    # Name fields
+    if "name" in dl and isinstance(dl["name"], dict):
+        for nfield in ["firstName", "middleName", "lastName"]:
+            if nfield in dl["name"] and dl["name"][nfield] is not None and not isinstance(dl["name"][nfield], str):
+                dl["name"][nfield] = str(dl["name"][nfield])
+    # Address fields
+    if "address" in dl and isinstance(dl["address"], dict):
+        for afield in ["street", "city", "state", "zipCode"]:
+            if afield in dl["address"] and dl["address"][afield] is not None and not isinstance(dl["address"][afield], str):
+                dl["address"][afield] = str(dl["address"][afield])
+    # List fields
+    for lfield in ["restrictions", "endorsements"]:
+        if lfield in dl and not isinstance(dl[lfield], list):
+            dl[lfield] = []
+    data["drivingLicense"] = dl
+    return data
+
 def extract_info_with_gemini(image_data: str, mime_type: str, card_type: CardType) -> Dict[str, Any]:
     try:
         model = genai.GenerativeModel('gemini-2.0-flash-exp')
@@ -230,7 +255,9 @@ def extract_info_with_gemini(image_data: str, mime_type: str, card_type: CardTyp
             response_text = response_text[7:-3]
         elif response_text.startswith('```'):
             response_text = response_text[3:-3]
+        print("Gemini raw response:", response_text)  # For debugging
         extracted_data = json.loads(response_text)
+        extracted_data = coerce_types(extracted_data)
         return extracted_data
     except json.JSONDecodeError as e:
         raise HTTPException(status_code=422, detail=f"Failed to parse Gemini response as JSON: {str(e)}")
