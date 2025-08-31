@@ -7,16 +7,16 @@ An AI-powered document parser built with Google Gemini AI + React + FastAPI, des
 ## Features  
 - 📄 **Multi-Document Support** – Extract details from Driving Licenses, Aadhaar Cards, and more.  
 - 🤖 **AI-Powered Extraction** – Uses **Gemini AI** for accurate and fast data parsing.  
-- 🎨 **Modern UI/UX** – Developed using **React + VanillaCSS** for a responsive and clean design.  
+- 🎨 **Modern UI/UX** – Developed using **React + TailwindCSS** for a responsive and clean design.  
 - 📂 **Export Options** – Save extracted results as **PDF, JSON, CSV, or TXT**.  
 - 🔍 **Copy to Clipboard** – Quickly copy extracted details for further use.  
 - ⚡ **Fast & Lightweight** – Built with **Vite** for optimized performance.  
-- 🌙 **Dark Mode Support** – Switch between light and dark themes.
+- 🌙 **Dark Mode** – Always-on dark theme for comfortable viewing.
 
 ---
 
 ## 🛠️ Tech Stack  
-- **Frontend**: React + Vite
+- **Frontend**: React + Vite + Tailwind CSS
 - **Backend**: FastAPI, python-dotenv  
 - **API**: Google Generative AI (Gemini)
 - **Icons & UI**: Lucide React 
