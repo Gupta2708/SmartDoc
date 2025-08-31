@@ -99,9 +99,8 @@ class APIResponse(BaseModel):
 
 # FIXED CORS configuration
 origins = [
-    "https://cosmic-zabaione-2c2572.netlify.app",
-    "https://my-react-app-nine-self.vercel.app",  # Fixed: removed trailing slash
-    "https://licenseee-lovat.vercel.app",  # Fixed: removed trailing slash
+    "https://smart-doc-five.vercel.app",
+    "https://licenseee-lovat.vercel.app",  
     "http://localhost:3000",
     "http://localhost:3001",
     "http://localhost:5500",
