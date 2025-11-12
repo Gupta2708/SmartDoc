@@ -15,7 +15,8 @@ from datetime import datetime
 
 # Load environment variables
 load_dotenv(dotenv_path='Bk/api/.env')
-openai.api_key = os.getenv("OPENROUTER_API_KEY")
+# Use OPENAI_API_KEY for OpenRouter, as required by openai package
+openai.api_key = os.getenv("OPENAI_API_KEY")
 openai.base_url = "https://openrouter.ai/api/v1/"
 
 app = FastAPI()
@@ -252,7 +253,7 @@ def extract_info_with_openrouter(image_data: str, mime_type: str, card_type: Car
             {"role": "user", "content": msg_content}
         ]
         response = openai.chat.completions.create(
-            model="openrouter/openai-gpt-3.5-turbo", # Use OpenRouter's proxy to gpt-3.5-turbo (or another model)
+            model="openai/gpt-oss-20b", 
             messages=messages,
             temperature=0.2,
             max_tokens=1024
