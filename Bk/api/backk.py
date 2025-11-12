@@ -5,7 +5,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
-import google.generativeai as genai
+import openai
 import os
 
 from dotenv import load_dotenv
@@ -15,8 +15,8 @@ from datetime import datetime
 
 # Load environment variables
 load_dotenv(dotenv_path='Bk/api/.env')
-api_key = os.getenv("GEMINI_API_KEY")
-genai.configure(api_key=api_key)
+openai.api_key = os.getenv("OPENROUTER_API_KEY")
+openai.base_url = "https://openrouter.ai/api/v1/"
 
 app = FastAPI()
 
@@ -117,7 +117,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-def get_gemini_prompt(card_type: CardType) -> str:
+def get_openai_prompt(card_type: CardType) -> str:
     if card_type == CardType.driving_license:
         return '''
         You are an AI system specialized in document information extraction. 
@@ -240,29 +240,35 @@ def coerce_types(data):
     data["drivingLicense"] = dl
     return data
 
-def extract_info_with_gemini(image_data: str, mime_type: str, card_type: CardType) -> Dict[str, Any]:
+def extract_info_with_openrouter(image_data: str, mime_type: str, card_type: CardType) -> Dict[str, Any]:
     try:
-        model = genai.GenerativeModel('gemini-2.0-flash-exp')
-        image_bytes = base64.b64decode(image_data)
-        image_part = {
-            "mime_type": mime_type,
-            "data": image_bytes
-        }
-        prompt = get_gemini_prompt(card_type)
-        response = model.generate_content([prompt, image_part])
-        response_text = response.text.strip()
+        prompt = get_openai_prompt(card_type)  # Same prompt
+        # Send as normal text, mention image is base64 in the prompt, or instruct how to extract
+        system_prompt = prompt + "\nThe following image is attached in base64 format. Return only valid JSON as response."
+        # OpenRouter doesn't natively handle images as files yet, so user can paste base64 or just state doc as text
+        msg_content = f"Image base64 (mime_type={mime_type}): {image_data[:100]}... (truncated)"
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": msg_content}
+        ]
+        response = openai.chat.completions.create(
+            model="openrouter/openai-gpt-3.5-turbo", # Use OpenRouter's proxy to gpt-3.5-turbo (or another model)
+            messages=messages,
+            temperature=0.2,
+            max_tokens=1024
+        )
+        response_text = response.choices[0].message.content.strip()
         if response_text.startswith('```json'):
             response_text = response_text[7:-3]
         elif response_text.startswith('```'):
             response_text = response_text[3:-3]
-        print("Gemini raw response:", response_text)  # For debugging
         extracted_data = json.loads(response_text)
         extracted_data = coerce_types(extracted_data)
         return extracted_data
     except json.JSONDecodeError as e:
-        raise HTTPException(status_code=422, detail=f"Failed to parse Gemini response as JSON: {str(e)}")
+        raise HTTPException(status_code=422, detail=f"Failed to parse OpenRouter response as JSON: {str(e)}")
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Gemini API error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"OpenRouter API error: {str(e)}")
 
 def validate_dl_number(dl_number):
     if not dl_number:
@@ -396,7 +402,7 @@ async def extract_info(image_data: ImageData):
             raise HTTPException(status_code=400, detail="No image data provided")
         if not image_data.mime_type.startswith('image/'):
             raise HTTPException(status_code=400, detail="Invalid image format")
-        extracted_info = extract_info_with_gemini(
+        extracted_info = extract_info_with_openrouter(
             image_data.image_data,
             image_data.mime_type,
             image_data.card_type
