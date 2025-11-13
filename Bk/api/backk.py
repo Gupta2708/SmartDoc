@@ -5,7 +5,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
-from openai import OpenAI
+import requests
 import os
 
 from dotenv import load_dotenv
@@ -247,33 +247,53 @@ def coerce_types(data):
 
 def extract_info_with_openrouter(image_data: str, mime_type: str, card_type: CardType) -> Dict[str, Any]:
     try:
-        client = OpenAI(
-            base_url="https://openrouter.ai/api/v1",
-            api_key=OPENAI_API_KEY,
-        )
-        prompt = get_openai_prompt(card_type)  # Same prompt
+        prompt = get_openai_prompt(card_type)
         system_prompt = prompt + "\nThe following image is attached in base64 format. Return only valid JSON as response."
         msg_content = f"Image base64 (mime_type={mime_type}): {image_data[:100]}... (truncated)"
-        messages = [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": msg_content}
-        ]
-        response = client.chat.completions.create(
-            model="openai/gpt-oss-20b",
-            messages=messages,
-            temperature=0.2,
-            max_tokens=1024
+
+        payload = {
+            "model": "openai/gpt-oss-20b",
+            "messages": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": msg_content}
+            ],
+            "temperature": 0.2,
+            "max_tokens": 1024
+        }
+
+        headers = {
+            "Authorization": f"Bearer {OPENAI_API_KEY}",
+            "HTTP-Referer": "https://smart-doc-five.vercel.app/",
+            "X-Title": "SmartDoc Extractor",
+            "Content-Type": "application/json"
+        }
+
+        res = requests.post(
+            "https://openrouter.ai/api/v1/chat/completions",
+            json=payload,
+            headers=headers,
+            timeout=60
         )
-        response_text = response.choices[0].message.content.strip()
+
+        if res.status_code != 200:
+            raise HTTPException(status_code=res.status_code, detail=f"OpenRouter API error: {res.text}")
+
+        response_data = res.json()
+        response_text = response_data["choices"][0]["message"]["content"].strip()
+
         if response_text.startswith('```json'):
             response_text = response_text[7:-3]
         elif response_text.startswith('```'):
             response_text = response_text[3:-3]
+
         extracted_data = json.loads(response_text)
         extracted_data = coerce_types(extracted_data)
         return extracted_data
+
     except json.JSONDecodeError as e:
         raise HTTPException(status_code=422, detail=f"Failed to parse OpenRouter response as JSON: {str(e)}")
+    except requests.RequestException as e:
+        raise HTTPException(status_code=500, detail=f"Request error: {str(e)}")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"OpenRouter API error: {str(e)}")
 
