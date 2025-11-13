@@ -248,17 +248,33 @@ def coerce_types(data):
 def extract_info_with_openrouter(image_data: str, mime_type: str, card_type: CardType) -> Dict[str, Any]:
     try:
         prompt = get_openai_prompt(card_type)
-        system_prompt = prompt + "\nThe following image is attached in base64 format. Return only valid JSON as response."
-        msg_content = f"Image base64 (mime_type={mime_type}): {image_data[:100]}... (truncated)"
+        system_prompt = prompt + "\nReturn only valid JSON as response. Do not include any explanations or markdown formatting."
 
+        # Format image for vision API (OpenAI/OpenRouter vision format)
+        image_url = f"data:{mime_type};base64,{image_data}"
+        
         payload = {
-            "model": "openai/gpt-oss-20b",
+            "model": "openai/gpt-4o-mini",  # Vision-capable model
             "messages": [
                 {"role": "system", "content": system_prompt},
-                {"role": "user", "content": msg_content}
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "Extract all information from this document image and return it as JSON following the schema provided."
+                        },
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": image_url
+                            }
+                        }
+                    ]
+                }
             ],
             "temperature": 0.2,
-            "max_tokens": 1024
+            "max_tokens": 2048
         }
 
         headers = {
