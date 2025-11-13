@@ -5,19 +5,21 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
-import openai
+from openai import OpenAI
 import os
 
 from dotenv import load_dotenv
 from enum import Enum
 import re
 from datetime import datetime
+from pathlib import Path
 
 # Load environment variables
-load_dotenv(dotenv_path='Bk/api/.env')
-# Use OPENAI_API_KEY for OpenRouter, as required by openai package
-openai.api_key = os.getenv("OPENAI_API_KEY")
-openai.base_url = "https://openrouter.ai/api/v1/"
+BASE_DIR = Path(__file__).resolve().parent
+load_dotenv(BASE_DIR / '.env')
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+if not OPENAI_API_KEY:
+    raise RuntimeError("OPENAI_API_KEY is not set. Please add it to Bk/api/.env or the deployment environment.")
 
 app = FastAPI()
 
@@ -245,17 +247,19 @@ def coerce_types(data):
 
 def extract_info_with_openrouter(image_data: str, mime_type: str, card_type: CardType) -> Dict[str, Any]:
     try:
+        client = OpenAI(
+            base_url="https://openrouter.ai/api/v1",
+            api_key=OPENAI_API_KEY,
+        )
         prompt = get_openai_prompt(card_type)  # Same prompt
-        # Send as normal text, mention image is base64 in the prompt, or instruct how to extract
         system_prompt = prompt + "\nThe following image is attached in base64 format. Return only valid JSON as response."
-        # OpenRouter doesn't natively handle images as files yet, so user can paste base64 or just state doc as text
         msg_content = f"Image base64 (mime_type={mime_type}): {image_data[:100]}... (truncated)"
         messages = [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": msg_content}
         ]
-        response = openai.chat.completions.create(
-            model="openai/gpt-oss-20b", 
+        response = client.chat.completions.create(
+            model="openai/gpt-oss-20b",
             messages=messages,
             temperature=0.2,
             max_tokens=1024
